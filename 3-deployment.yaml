@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: mongodb
+  name: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: MONGO_INITDB_ROOT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: database-creds
+                key: rootuser
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-creds
+                key: rootpassword
+          - name: MONGO_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-creds
+                key: user
+          - name: MONGO_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-creds
+                key: password
+          - name: MONGO_INITDB_DATABASE
+            value: "untapped"
+          volumeMounts:
+            - name: mongo-initdb
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: mongo-initdb
+          configMap:
+            name: mongo-initdb-config

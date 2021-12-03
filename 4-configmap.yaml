@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongo-initdb-config
+  namespace: mongodb
+data:
+  initdb.sh: |
+    mongo -- <<EOF
+    var database = '$MONGO_INITDB_DATABASE';
+    var username = '$MONGO_USER';
+    var password = '$MONGO_PASSWORD';
+    db = db.getSiblingDB(database);
+    db.createUser({ user: username, pwd: password, roles: [{ role: 'dbOwner', db: database }] });
+    db.createCollection('collection_test');
